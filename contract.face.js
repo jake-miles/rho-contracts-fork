@@ -62,7 +62,7 @@ contractObject.closeCycle
     .doc("See: `optional`"),
 
   orNull: c.method(contractObject).returns(contractObject)
-    .doc("Relaxes the definition of 'missing' for this contract - allows the checked data to be null or a non-null value matching this contract."),
+    .doc("Returns a contract with a relaxed definition of 'missing' - allows the checked data to be null or a non-null value matching this contract."),
   
   doc: c.method(contractObject).extraArgs([c.string]).returns(contractObject)
     .doc("Returns `this` with zero or more strings set as the `theDoc` array.",
