@@ -406,7 +406,6 @@ Contract.prototype = {
   },
 
   orNull: function () {
-    var nonNullCheck = this.check;
     return gentleUpdate (or (value (null), this), { 
       isMissing: function (v) { return ! __.isUndefined(v) }
     });
