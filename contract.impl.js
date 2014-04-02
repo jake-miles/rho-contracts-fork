@@ -26,10 +26,6 @@ exports.privates = {};
 // Helper Functions
 //
 
-function isMissing(v) { 
-  return __.isUndefined(v) || v === null;
-}
-
 function clone(obj) {
   var other = __.clone(obj);
   other.__proto__ = obj.__proto__;
@@ -366,6 +362,10 @@ Contract.prototype = {
   // and for passing as the `name` argument of `check`.
   isOptional: false,
 
+  isMissing: function (data) {
+    return __.isUndefined(data) || data === null;
+  },
+
   needsWrappingIfAny: function (contracts) {
     var self = this;
     if (__.any(contracts, function (c) { return c.needsWrapping; }))
@@ -403,6 +403,14 @@ Contract.prototype = {
     return gentleUpdate(this, { isOptional: true,
                                 toString: function () { var self = this; return 'c.optional(' + oldToString.call(self) + ')'; }
                               }); 
+  },
+
+  orNull: function () {
+    var nonNullCheck = this.check;
+    var nonNullToString = this.toString;
+    return gentleUpdate (or (value (null), this), { 
+      isMissing: function (v) { return ! __.isUndefined(v) }
+    });
   },
 
   doc: function (/*...*/) { 
@@ -746,10 +754,10 @@ function object(/*opt*/ fieldContracts) {
     var self = this;
 
     __(self.fieldContracts).each(function (contract, field) {
-      if (!contract.isOptional && isMissing(data[field])) {
+      if (!contract.isOptional && contract.isMissing(data[field])) {
         context.fail(new ContractError(context, "Field `" + field + "` required, got " + stringify(data)).fullContractAndValue());
       }
-      if (!isMissing(data[field])) next(contract, data[field], stackContextItems.objectField(field));
+      if (!contract.isMissing(data[field])) next(contract, data[field], stackContextItems.objectField(field));
     });
   };
   self.wrapper = function (data, next) {

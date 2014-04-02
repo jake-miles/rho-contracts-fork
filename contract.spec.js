@@ -90,6 +90,21 @@ describe ("nothing", function () {
   it ("report check name", function () { (function () { c.nothing.wrap(5, 'test'); }).should.throwContract(/test/); });
 });
 
+describe ("orNull", function () {
+  it ("rejects undefined", function () {
+    (function () { c.string.orNull().check (undefined) ; }).should.throwContract();
+  });
+  it ("allows null", function () {
+    (function () { c.string.orNull().check (null); }).should.not.throw();
+  });
+  it ("lets original contract pass if non-null", function () {
+    (function () { c.string.orNull().check ("hello"); }).should.not.throw();
+  });
+  it ("lets original contract fail if non-null", function () {
+    (function () { c.string.orNull().check (5); }).should.throwContract();
+  });
+});
+
 describe ("value", function () {
   it ("pass same", function () { c.value(5).check(5).should.eql(5); });
   it ("reject different", function () { (function () { c.value(5).check(6); }).should.throwContract(); });
