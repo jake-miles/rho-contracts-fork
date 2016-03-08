@@ -492,19 +492,19 @@ ContractError: Expected string, but got 105
 for the return value of the call.
 ```
 
-* `c.fun().ths( ---- )` : We mention `.ths()` for completeness. This contract
+* `c.fun().thisArg( ---- )` : We mention `.thisArg()` for completeness. This contract
   checks that the method was invoked on an object of the right form. (Note, this
-  method name is missing an "i" to avoid clashing with the JavaScript reserved
-  word "this"). However, usages of `c.fun().ths` are rare. It is more customary
+  method name is not called `this` to avoid clashing with the JavaScript reserved
+  word `this`). However, usages of `c.fun().thisArg` are rare. It is more customary
   to use the `.method()` method on object contacts (See *Contracts on Objects*
-  below.) `c.fun().ths` is useful when using the *Apply Invocation Pattern*
+  below.) `c.fun().thisArg` is useful when using the *Apply Invocation Pattern*
   described in Chapter 4 of Douglas' Crockford' *JavaScript, The Good Parts*.
 
 ```javascript
 > var makeStatus = function(string) { return { status:  string } }
 
 > var get_status =
-   c.fun().ths(c.object({status: c.string})).returns(c.string)
+   c.fun().thisArg(c.object({status: c.string})).returns(c.string)
     .wrap(
        function() { return this.status })
 
@@ -667,7 +667,7 @@ animal -- an error could go undetected:
 undefined says tweettweet.     // Yikes!
 ```
 
-The `.ths()` method on function contracts can be used to add this additional
+The `.thisArg()` method on function contracts can be used to add this additional
 check. In order to distinguish functions intended be used as methods,
 `rho-contracts.js` provides `c.method()`, which is a variant of `c.fun()` that
 takes the contract on `this` as its first argument:
