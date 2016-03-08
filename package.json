@@ -12,7 +12,7 @@
     "mocha": "1.14.x",
     "mustache": "0.7.x",
     "should": "1.2.x",
-    "underscore": "1.5.x"
+    "underscore": "1.8.x"
   },
   "repository": {
     "type": "git",

@@ -767,6 +767,34 @@ ContractError: Field `carModel` required, got { trunkSize: 9.8 }
 
 ### More Functionality
 
+All `rho-contract` function will automatically promote simple values
+to the corresponding contract when passed to a function that expects a
+contract. This applies to arrays of one arguments, non-functions, and
+non-objects. Promoting these allows a simpler notation for
+contracts. However, automatically promoting object is too error prone,
+so to use the lighter notation in the presence of object contracts,
+call `toContract` explicitely, like this:
+
+```javascript
+cc.kidPark = toContract({
+    name: c.string,
+    acres: c.number,
+    playunit: {
+        junglebars: c.bool,
+        slides: c.number,
+        ladders: [{
+            color: c.string,
+            size: c.string
+        }]
+    }
+
+})
+
+```
+
+
+### Undocumented Functionality
+
 Additional functionality that's not documented yet:
 
 - c.pred
@@ -787,7 +815,6 @@ And also
 - isA
 - the contract contract
 - implicity promotion to contract
-- toContract: promoting values to a contract explicitely.
 - quacksLike
 - silentAnd
 - `c.fn()`

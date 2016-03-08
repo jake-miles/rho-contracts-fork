@@ -76,7 +76,40 @@ should.Assertion.prototype.throwType = function(type, message){
 
 describe ("toContract", function () {
   it ("passes contracts", function () { c.toContract(c.any).contractName.should.eql(c.any.contractName); });
-  it ("refuses to wrap objects", function () { (function () { c.toContract({})}).should.throwError(/Cannot promote/); } );
+  it ("wrap objects", function () { c.toContract({}).should.be.an.instanceof(c.Contract); } );
+  it ("wrap objects recursively", function () {
+    var kidPark = c.toContract({
+      name: c.string,
+      acres: c.number,
+      playunit: {
+        junglebars: c.bool,
+        slides: c.number,
+        ladders: [{
+          color: c.string,
+          size: c.string
+        }]
+      }
+    });
+
+    var example = {
+      name: "corner park",
+      acres: 0.1,
+      playunit: {
+        junglebars: true,
+        slides: 3,
+        ladders: [{
+          color: "red",
+          size: "large"
+        }, {
+          color: "yellow",
+          size: "medium"
+        },]
+      }
+    }
+    kidPark.check(example).should.be.eql(example);
+    example.playunit.ladders[1].size = 0;
+    (function () { kidPark.check(example) }).should.throwContract(/Expected string/);
+  });
   it ("wraps arrays", function () { c.toContract([c.any]).should.be.an.instanceof(c.Contract); });
   it ("wraps values", function () { c.toContract(5).contractName.should.be.eql(c.value(5).contractName); });
 });
