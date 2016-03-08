@@ -58,7 +58,11 @@ function ith(i) {
 }
 
 function stringify(v) {
-  return util.inspect(v, false, errorMessageInspectionDepth, false);
+  if (hasContractSignal(v)) {
+    return v.toString();
+  } else {
+    return util.inspect(v, false, errorMessageInspectionDepth, false);
+  }
 }
 
 //--
@@ -195,7 +199,7 @@ ContractError.prototype = _.extend(Object.create(Error.prototype), {
     } else if (self.context.blameMe) {
       self.message += "`" + thingNameWithParens + "` broke its contract";
     } else {
-      self.message += "on `" + thingNameWithParens + "`";
+      self.message += "broke the contract of `" + thingNameWithParens + "`";
     }
   },
 
@@ -412,6 +416,10 @@ Contract.prototype = {
 
 exports.Contract = Contract;
 
+function hasContractSignal(v) {
+  return v && v.signal === Contract.prototype.signal;
+}
+
 
 //--
 //
@@ -419,7 +427,7 @@ exports.Contract = Contract;
 //
 
 function _toContract (v, upgradeObjects) {
-  if (v && v.signal === Contract.prototype.signal) {
+  if (hasContractSignal(v)) {
     return v;
   }
   else if (_.isArray(v)) {
@@ -520,7 +528,7 @@ var isA = function(parent, name) {
 exports.isA = isA;
 
 var contract = pred(function (v) {
-  return (v && v.signal === Contract.prototype.signal) || _.isArray(v) || !_.isObject(v);
+  return hasContractSignal(v) || _.isArray(v) || !_.isObject(v);
 }).rename('contract');
 exports.contract = contract;
 
@@ -725,7 +733,9 @@ exports.tuple = tuple;
 function hash(valueContract) {
   var self = new Contract('hash');
   self.valueContract = valueContract;
-  self.firstChecker = _.isObject;
+  self.firstChecker = function (v) {
+    return _.isObject(v) && !hasContractSignal(v);
+  }
   self.nestedChecker = function (data, next, context) {
     var self = this;
     _.each(data, function (v, k) {
@@ -815,6 +825,28 @@ function object(/*opt*/ fieldContracts) {
   return self;
 }
 exports.object = object;
+
+function wrapConstructor(constructor, argContracts, fieldContracts) {
+
+  var name = null;
+  var match = constructor.toString().match(/function ([^\(]+)/)
+  if (match.length) {
+    name = match[1];
+  }
+
+  var wrappedConstructor = fun.apply(null, argContracts).wrap(constructor, name);
+
+  _.each(constructor.prototype, function (v, k) {
+    if (_.has(fieldContracts, k)) {
+      wrappedConstructor.prototype[k] = fieldContracts[k].wrap(v, k);
+    } else {
+      wrappedConstructor.prototype[k] = v;
+    }
+  });
+
+  return wrappedConstructor;
+};
+exports.wrapConstructor = wrapConstructor;
 
 
 //--
@@ -939,7 +971,7 @@ function funHelper(who, argumentContracts) {
      "expected an object with exactly one field to specify the name of the " +ith(i)+
      " argument, but got " + stringify(argSpec));
 
-    if (argSpec instanceof Contract)
+    if (hasContractSignal(argSpec))
       throw new ContractLibraryError
     (who, false,
      "expected a one-field object specifying the name and the contract of the "+ith(i)+
@@ -985,7 +1017,7 @@ function fun(/*...*/) {
 exports.fun = fun;
 
 function method(ths /* ... */) {
-  if (!(ths instanceof Contract))
+  if (!hasContractSignal(ths))
     throw new ContractLibraryError('method', false, "expected a Contract for the `this` argument, by got " + stringify(ths));
   return gentleUpdate(funHelper('method', _.toArray(arguments).slice(1)).thisArg(ths),
                       { contractName: 'method' });

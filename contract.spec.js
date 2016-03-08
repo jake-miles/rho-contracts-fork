@@ -24,10 +24,6 @@ Object.prototype.toString = function () {
   else return oldToString.call(that);
 };
 
-var keyvals = function(data) {
-  return __.map(data, function(v, k) { return [k, v]; });
-};
-
 should.Assertion.prototype.throwError = function (message) {
   this.throw(message);
 };
@@ -66,10 +62,12 @@ should.Assertion.prototype.throwType = function(type, message){
       throw new Error("should.throw expects a string or a regexp");
     }
   }
+  console.log(["HERE", this, type, message, errorInfo, err.message]);
+
   this.assert(
     ok,
-    'expected a ' + type.name + ' to be thrown ' + errorInfo,
-    'expected no ' + type.name + ' to be thrown, got "' + err.message + '"');
+    function () { return 'expected a ' + type.name + ' to be thrown ' + errorInfo },
+    function () { return 'expected no ' + type.name + ' to be thrown, got "' + err.message + '"' });
 
   return this;
 };
@@ -258,6 +256,37 @@ describe ("strict", function () {
   it ("fails a tuple", function () { (function () { c.tuple(c.value(10)).strict().check([10, 20]); }).should.throwContract(); });
 });
 
+
+describe ("wrapConstructor", function () {
+
+  function Example(x) {
+    this.x = x;
+  }
+  Example.prototype.inc = function (i) {
+    this.x += i;
+  }
+
+  var Wrapped = c.wrapConstructor(Example, [{x: c.number}], {
+    inc: c.fun({i: c.number})
+  });
+
+  it ("creates a wrapped object", function () {
+    var instance = new Wrapped(5);
+    instance.should.be.instanceof(Wrapped);
+    instance.x.should.eql(5);
+    instance.inc(2)
+    instance.x.should.eql(7);
+  })
+
+  it ("refuses wrong constructor arguments", function () {
+    (function () { new Wrapped("boom") }).should.throwContract(/Example[\s\S]+argument/);
+  })
+
+  it ("produces an object that fails on bad input", function () {
+    (function () { new Wrapped(5).inc("five") } ).should.throwContract(/inc()[\s\S]+number/);
+  })
+
+});
 
 describe ("fn", function () {
 

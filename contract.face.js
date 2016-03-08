@@ -145,6 +145,15 @@ var contracts = {
          "`wrap` returns `data` unchanged. Otherwise, it returns `data` wrapped with the machinery",
          "necessary for further contract checking."),
 
+  wrapConstructor: c.fun({constructor: c.anyFunction},
+                         {argContracts: c.array(c.hash(c.contract))},
+                         {fieldContracts: c.hash(c.contract)})
+    .returns(c.anyFunction)
+    .doc("Takes a constructor function that is equiped with a `prototype` field and returns a",
+         "function that (1) checks its input according to the `argContracts` (2) has its `prototype`",
+         "wrapped according to the `fieldContracts` and (3) has a `prototype.constructor` field",
+         "pointing to itself"),
+
   optional: c.fun({contract: c.contract}).returns(contractObject)
     .doc("Returns an optional version of `contract`. It will accept all falsy values in",
          "addition to all the values accepted by `this`. ",
@@ -370,7 +379,8 @@ var contracts = {
                  { additionalExports: c.optional(c.object()) }
                 )
     .doc("Returns an object like `self` where each element is wrapped using the",
-         "correspoding contract in `contracts`.",
+         "correspoding contract in `contracts`. Notably, publish hides the elements",
+         "that are not mentionned in the contract, effectively making them private",
          "",
          "`publish` records the names of the items being wrapped in the wrapper. The names",
          "are then used to produce better error messages when the contracts fail.",
