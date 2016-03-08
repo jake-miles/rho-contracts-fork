@@ -114,7 +114,7 @@ functionContract.closeCycle(
          "array containing the extra arugments, so it should be an array contract or a",
          "tuple contract."),
 
-  ths: c.method(functionContract, { thisContract: c.contract }).returns(functionContract)
+  thisArg: c.method(functionContract, { thisContract: c.contract }).returns(functionContract)
     .doc("Returns a contract like `this` that accepts only calls where the",
          "implicit `this` argument passes `thisContract`."),
 

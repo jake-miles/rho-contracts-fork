@@ -899,7 +899,7 @@ function fnHelper(who, argumentContracts) {
     var self = this; return gentleUpdate(self, { extraArgumentContract: c });
   };
   self.needsWrapping = true;
-  self.ths = function (c) { var self = this; return gentleUpdate(self, { thisContract: c }); };
+  self.thisArg = function (c) { var self = this; return gentleUpdate(self, { thisContract: c }); };
   self.returns = function (c) { var self = this; return gentleUpdate(self, { resultContract: c}); };
   self.toString = function () {
     var self = this;
@@ -975,7 +975,7 @@ exports.fun = fun;
 function method(ths /* ... */) {
   if (!(ths instanceof Contract))
     throw new ContractLibraryError('method', false, "expected a Contract for the `this` argument, by got " + stringify(ths));
-  return gentleUpdate(funHelper('method', __.toArray(arguments).slice(1)).ths(ths),
+  return gentleUpdate(funHelper('method', __.toArray(arguments).slice(1)).thisArg(ths),
                       { contractName: 'method' });
 }
 exports.method = method;
