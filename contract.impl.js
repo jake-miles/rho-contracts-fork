@@ -900,6 +900,7 @@ function fnHelper(who, argumentContracts) {
   };
   self.needsWrapping = true;
   self.thisArg = function (c) { var self = this; return gentleUpdate(self, { thisContract: c }); };
+  self.ths = self.thisArg; // for backward compatibility
   self.returns = function (c) { var self = this; return gentleUpdate(self, { resultContract: c}); };
   self.toString = function () {
     var self = this;
