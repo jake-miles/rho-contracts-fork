@@ -767,13 +767,13 @@ ContractError: Field `carModel` required, got { trunkSize: 9.8 }
 
 ### More Functionality
 
-All `rho-contract` function will automatically promote simple values
+All `rho-contracts.js` functions will automatically promote simple values
 to the corresponding contract when passed to a function that expects a
 contract. This applies to arrays of one arguments, non-functions, and
 non-objects. Promoting these allows a simpler notation for
-contracts. However, automatically promoting object is too error prone,
+contracts. However, automatically promoting objects is too error prone,
 so to use the lighter notation in the presence of object contracts,
-call `toContract` explicitely, like this:
+call `toContract` explicitly, like this:
 
 ```javascript
 cc.kidPark = toContract({
@@ -791,6 +791,42 @@ cc.kidPark = toContract({
 })
 
 ```
+
+Constructors functions are handled specially for three reasons. First,
+though in JavaScript function are object, `rho-contracts.js` maintains
+a enforces a strict distinction in order to provide earlier error
+messages in the common cases. Constructor function are a notable
+exception. Second, constructor functions occur in the right-hand side
+of the `instanceof` operator. The contract-checking shells introduced
+when checks function contracts could make these tests fail without
+explicit control on when the wrapping occurs. And third, wrapping the
+methods in the constructor's `prototype` field make it possible to
+share the contract-checking shells across instances, thus reducing
+memory overhead.
+
+Because of this, there is no `construct` contract. Instead,
+use `wrapConstructor` to wrap a construct once near its definition
+point, like this.
+
+```javascript
+  function CounterImpl(x) {
+    this.x = x;
+  }
+  CounterImpl.prototype.inc = function (i) {
+    this.x += i;
+  }
+
+  var Counter = c.wrapConstructor(CounterImpl, [{x: c.number}], {
+    inc: c.fun({i: c.number})
+  });
+
+  var instance = new Counter(5);
+  instance.should.be.instanceof(Counter);
+  instance.x.should.eql(5);
+  instance.inc(2)
+  instance.x.should.eql(7);
+```
+
 
 
 ### Undocumented Functionality
@@ -813,8 +849,6 @@ And also
 
 - anyFunction
 - isA
-- the contract contract
-- implicity promotion to contract
 - quacksLike
 - silentAnd
 - `c.fn()`
