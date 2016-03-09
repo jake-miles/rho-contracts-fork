@@ -58,7 +58,7 @@ function ith(i) {
 }
 
 function stringify(v) {
-  if (hasContractSignal(v)) {
+  if (isContractInstance(v)) {
     return v.toString();
   } else {
     return util.inspect(v, false, errorMessageInspectionDepth, false);
@@ -416,8 +416,17 @@ Contract.prototype = {
 
 exports.Contract = Contract;
 
-function hasContractSignal(v) {
-  return v && v.signal === Contract.prototype.signal;
+function isContractInstance(v) {
+
+  // Instead of doing `v instanceof Contract`, a value is considered a
+  // contract iff `v.signal === Contract.prototype.signal`, where
+  // `signal` is a short constant random string. The signal check is
+  // slightly more reliable. With the `instanceof` check, a situation
+  // where two different versions of the contract library are
+  // installed make the check fail, which result in throughly puzzling
+  // contract errors.
+
+ return v && v.signal === Contract.prototype.signal;
 }
 
 
@@ -427,7 +436,7 @@ function hasContractSignal(v) {
 //
 
 function _toContract (v, upgradeObjects) {
-  if (hasContractSignal(v)) {
+  if (isContractInstance(v)) {
     return v;
   }
   else if (_.isArray(v)) {
@@ -528,7 +537,7 @@ var isA = function(parent, name) {
 exports.isA = isA;
 
 var contract = pred(function (v) {
-  return hasContractSignal(v) || _.isArray(v) || !_.isObject(v);
+  return isContractInstance(v) || _.isArray(v) || !_.isObject(v);
 }).rename('contract');
 exports.contract = contract;
 
@@ -734,7 +743,7 @@ function hash(valueContract) {
   var self = new Contract('hash');
   self.valueContract = valueContract;
   self.firstChecker = function (v) {
-    return _.isObject(v) && !hasContractSignal(v);
+    return _.isObject(v) && !isContractInstance(v);
   }
   self.nestedChecker = function (data, next, context) {
     var self = this;
@@ -981,7 +990,7 @@ function funHelper(who, argumentContracts) {
      "expected an object with exactly one field to specify the name of the " +ith(i)+
      " argument, but got " + stringify(argSpec));
 
-    if (hasContractSignal(argSpec))
+    if (isContractInstance(argSpec))
       throw new ContractLibraryError
     (who, false,
      "expected a one-field object specifying the name and the contract of the "+ith(i)+
@@ -1027,7 +1036,7 @@ function fun(/*...*/) {
 exports.fun = fun;
 
 function method(ths /* ... */) {
-  if (!hasContractSignal(ths))
+  if (!isContractInstance(ths))
     throw new ContractLibraryError('method', false, "expected a Contract for the `this` argument, by got " + stringify(ths));
   return gentleUpdate(funHelper('method', _.toArray(arguments).slice(1)).thisArg(ths),
                       { contractName: 'method' });

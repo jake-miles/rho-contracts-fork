@@ -769,7 +769,7 @@ ContractError: Field `carModel` required, got { trunkSize: 9.8 }
 
 All `rho-contracts.js` functions will automatically promote simple values
 to the corresponding contract when passed to a function that expects a
-contract. This applies to arrays of one arguments, non-functions, and
+contract. This applies to arrays of one argument, non-functions, and
 non-objects. Promoting these allows a simpler notation for
 contracts. However, automatically promoting objects is too error prone,
 so to use the lighter notation in the presence of object contracts,
@@ -792,20 +792,22 @@ cc.kidPark = toContract({
 
 ```
 
-Constructors functions are handled specially for three reasons. First,
-though in JavaScript function are objects, `rho-contracts.js`
+Constructors functions are handled specially for three reasons.
+
+* First, though in JavaScript function are objects, `rho-contracts.js`
 enforces a strict distinction in order to provide earlier error
 messages in the common cases. Constructor functions are a notable
-exception. Second, constructor functions occur in the right-hand side
+exception.
+* Second, constructor functions occur in the right-hand side
 of the `instanceof` operator. The contract-checking shells introduced
 when checking function contracts could make these tests fail without
-explicit control on when the wrapping occurs. And third, wrapping the
-methods in the constructor's `prototype` field make it possible to
-share the contract-checking shells across instances, thus reducing
-memory overhead.
+explicit control of when the wrapping occurs.
+* And third, wrapping the methods in the constructor's `prototype`
+field make it possible to share the contract-checking shells across
+instances, thus reducing memory overhead.
 
-Because of this, there is no `construct` contract. Instead,
-use `wrapConstructor` to wrap a construct once near its definition
+Because of this, there is no `constructor` contract. Instead,
+use `wrapConstructor` to wrap a constructor once near its definition
 point, like this.
 
 ```javascript
@@ -829,7 +831,7 @@ point, like this.
 
 The fields specified in the third argument to `wrapConstructor` do not
 need to be comprehensive. Additional fields present in `prototype` are
-copies to the result without check nor wrapping. Notably, this means
+copied to the result without check nor wrapping. Notably, this means
 that private methods and fields can be omitted from the contract.
 
 

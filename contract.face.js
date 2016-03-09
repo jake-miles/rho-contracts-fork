@@ -149,7 +149,7 @@ var contracts = {
                          {argContracts: c.array(c.hash(c.contract))},
                          {fieldContracts: c.hash(c.contract)})
     .returns(c.anyFunction)
-    .doc("Takes a constructor function that is equiped with a `prototype` field and returns a",
+    .doc("Takes a constructor function that is equipped with a `prototype` field and returns a",
          "function that (1) checks its input according to the `argContracts` (2) has its `prototype`",
          "wrapped according to the `fieldContracts` and (3) has a `prototype.constructor` field",
          "pointing to itself"),
