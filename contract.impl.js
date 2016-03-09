@@ -827,14 +827,24 @@ function object(/*opt*/ fieldContracts) {
 exports.object = object;
 
 function wrapConstructor(constructor, argContracts, fieldContracts) {
-
   var name = null;
   var match = constructor.toString().match(/function ([^\(]+)/)
   if (match.length) {
     name = match[1];
   }
 
+  var missing = _.difference(_.keys(fieldContracts), _.keys(constructor.prototype));
+
+  if (missing.length) {
+    throw new ContractLibraryError
+      ('wrapConstructor', false,
+       util.format("Some fields present %s are missing on the prototype: %s",
+                   name ? util.format("in %s's prototype contracts", name) : "in the contract",
+                   missing.join(', ')));
+  }
+
   var wrappedConstructor = fun.apply(null, argContracts).wrap(constructor, name);
+
 
   _.each(constructor.prototype, function (v, k) {
     if (_.has(fieldContracts, k)) {

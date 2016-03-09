@@ -46,7 +46,7 @@ should.Assertion.prototype.throwType = function(type, message){
   }
 
   if (caught) {
-    console.log('\ncontracts/contract.spec.js Line 49:\n'+err+'\n'+err.renderedStack+'\n\n');
+    //console.log('\ncontracts/contract.spec.js Line 49:\n'+err+'\n'+err.renderedStack+'\n\n');
     if (err.name !== type.name) {
       ok = false;
       errorInfo = "but the error was " + err;
@@ -264,6 +264,9 @@ describe ("wrapConstructor", function () {
   Example.prototype.inc = function (i) {
     this.x += i;
   }
+  Example.prototype._dec = function (i) {
+    this.x -= i;
+  }
 
   var Wrapped = c.wrapConstructor(Example, [{x: c.number}], {
     inc: c.fun({i: c.number})
@@ -283,6 +286,21 @@ describe ("wrapConstructor", function () {
 
   it ("produces an object that fails on bad input", function () {
     (function () { new Wrapped(5).inc("five") } ).should.throwContract(/inc()[\s\S]+number/);
+  })
+
+  it ("places fields on instances even when omitted from the contract", function () {
+    var w = new Wrapped(4);
+    w._dec("twenty")
+    isNaN(w.x).should.be.ok;
+  })
+
+  it ("detects missing fields", function () {
+    (function () {
+      c.wrapConstructor(function Nothing() {}, [], {
+        inc: c.fun({i: c.number}),
+        _dec: c.fun({i: c.number})
+      });
+    }).should.throwType(c.privates.ContractLibraryError, /are missing[\s\S]+inc, _dec/);
   })
 
 });
