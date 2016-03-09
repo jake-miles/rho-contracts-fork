@@ -62,7 +62,6 @@ should.Assertion.prototype.throwType = function(type, message){
       throw new Error("should.throw expects a string or a regexp");
     }
   }
-  console.log(["HERE", this, type, message, errorInfo, err.message]);
 
   this.assert(
     ok,
