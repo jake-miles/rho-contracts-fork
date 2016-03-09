@@ -830,7 +830,7 @@ function wrapConstructor(constructor, argContracts, fieldContracts) {
   var name = null;
   var match = constructor.toString().match(/function ([^\(]+)/)
   if (match.length) {
-    name = match[1];
+    name = match[1].trim();
   }
 
   var missing = _.difference(_.keys(fieldContracts), _.keys(constructor.prototype));
