@@ -1020,7 +1020,7 @@ function fnHelper(who, argumentContracts) {
           if (c.thisContract === any) {
             // Functions with no specified `thisContract` are assumed to be methods
             // and given a `thisContract`
-            c = gentleUpdate(c, { thisContract: newThisContract })
+            c = gentleUpdate(c, { thisContract: newThisContract });
           }
           WrappedConstructor.prototype[k] = checkWrapWContext(c, WrappedConstructor.prototype[k], freshContext);
         });
