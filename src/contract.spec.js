@@ -10,7 +10,7 @@
 
 var should = require('should');
 var __ = require('underscore');
-var c = require('./contract.face');
+var c = require('./contract');
 var fs = require('fs');
 
 Array.prototype.toString = function () {

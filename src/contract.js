@@ -7,8 +7,10 @@
 
 /*jshint eqeqeq:true, bitwise:true, forin:true, immed:true, latedef:true, newcap:true, undef:true, strict:false, node:true */
 
-var __ = require('underscore'); // '__' because node's repl already binds '_'
+var _ = require('underscore');
 var c = require('./contract.impl');
+
+_.extend(c, require('./function-contracts.js'));
 
 var thisModuleName = 'Contracts';
 
@@ -138,6 +140,14 @@ var contextContract = c.object({ thingName: c.string,
                                  stack: c.array(c.any),
                                  contract: c.contract
                                });
+
+var oneKeyHash = c.fun({ valueContract: c.contract })
+    .wrap(function (valueContract) {
+      return c.and(
+        c.hash(valueContract),
+        c.pred(function (hash) { return _(hash).keys().length === 1; })
+      ).rename('a hash containing exactly one key, with a value satisfying ' + valueContract.toString());
+    });
 
 var contracts = {
   check: c.fun({contract: c.contract}, {data: c.any}, { name: c.optional(c.string) })
