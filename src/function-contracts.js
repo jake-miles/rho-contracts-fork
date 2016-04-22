@@ -11,12 +11,13 @@ var util = require('util');
 var _ = require('underscore');
 var u = require('./utils');
 var c = require('./contract.impl');
+var errors = require('./errors');
 
 function checkOptionalArgumentFormals(who, argumentContracts) {
   var optionsOnly = false;
   _.each(argumentContracts, function (c, i) {
     if (optionsOnly && !c.isOptional) {
-      throw new c.privates.ContractLibraryError('fun', false, "The non-optional "+i+"th arguments cannot follow an optional arguments.");
+      throw new errors.ContractLibraryError('fun', false, "The non-optional "+i+"th arguments cannot follow an optional arguments.");
     }
 
     optionsOnly = optionsOnly || c.isOptional;
@@ -30,19 +31,19 @@ function checkOptionalArgumentCount(argumentContracts, extraArgumentContract, ac
   if (nOptional === 0 && !extraArgumentContract) {
 
     if (actuals.length !== nRequired) {
-      context.fail(new c.privates.ContractError
+      context.fail(new errors.ContractError
                    (context, "Wrong number of arguments, expected " + nRequired + " but got " + actuals.length)
                    .fullContract());
     }
 
   } else if (actuals.length < nRequired) {
-    context.fail(new c.privates.ContractError
+    context.fail(new errors.ContractError
                  (context, "Too few arguments, expected at least " + nRequired + " but got " + actuals.length)
                  .fullContract());
 
   } else if (!extraArgumentContract &&
              actuals.length > nRequired + nOptional) {
-    context.fail(new c.privates.ContractError
+    context.fail(new errors.ContractError
                  (context, "Too many arguments, expected at most " + (nRequired + nOptional) + " but got " + actuals.length)
                  .fullContract());
   }
@@ -83,17 +84,17 @@ function fnHelper(who, argumentContracts) {
         return result;
       };
 
-      var wrappedThis = next(self.thisContract, this, c.privates.stackContextItems['this'], true);
+      var wrappedThis = next(self.thisContract, this, errors.stackContextItems['this'], true);
       var wrappedArgs =
         _.map(_.zip(self.argumentContracts, _.toArray(arguments).slice(0, self.argumentContracts.length)), function(pair, i) {
-          return next(pair[0], pair[1], c.privates.stackContextItems.argument(pair[0].thingName ? pair[0].thingName : i), true);
+          return next(pair[0], pair[1], errors.stackContextItems.argument(pair[0].thingName ? pair[0].thingName : i), true);
         });
       var extraArgs = (!self.extraArgumentContract ? [] :
                        next(self.extraArgumentContract, _.toArray(arguments).slice(self.argumentContracts.length),
-                            c.privates.stackContextItems.extraArguments, true));
+                            errors.stackContextItems.extraArguments, true));
 
       var result = fn.apply(wrappedThis, wrappedArgs.concat(extraArgs));
-      return next(self.resultContract, result, c.privates.stackContextItems.result, false);
+      return next(self.resultContract, result, errors.stackContextItems.result, false);
     };
 
     if (fn.prototype) {
@@ -125,7 +126,7 @@ function fnHelper(who, argumentContracts) {
 
         var missing = _.difference(_.keys(prototypeFields), _.allKeys(v.prototype));
         if (missing.length) {
-          throw new c.privates.ContractLibraryError
+          throw new errors.ContractLibraryError
           ('constructs', false,
            util.format("Some fields present in %s prototype contract are missing on the prototype: %s",
                        self.thingName ? util.format("%s's", self.thingName) : "the",
@@ -148,7 +149,7 @@ function fnHelper(who, argumentContracts) {
           contextHere.thingName = self.thingName || contextHere.thingName;
 
           var receivedResult = wrappedFnWithoutResultCheck.apply(this, arguments);
-          contextHere.stack.push(c.privates.stackContextItems.result);
+          contextHere.stack.push(errors.stackContextItems.result);
 
           // Constructor semantic according to the JavaScript standard,
           // cf. http://stackoverflow.com/a/1978474/35902
@@ -213,20 +214,20 @@ function funHelper(who, argumentContracts) {
 
   _.each(argumentContracts, function (argSpec, i) {
     if (!_.isObject(argSpec))
-      throw new c.privates.ContractLibraryError
+      throw new errors.ContractLibraryError
     (who, false,
      "expected an object with exactly one field to specify the name of the " +ith(i)+
      " argument, but got " + stringify(argSpec));
 
     if (u.isContractInstance(argSpec))
-      throw new c.privates.ContractLibraryError
+      throw new errors.ContractLibraryError
     (who, false,
      "expected a one-field object specifying the name and the contract of the "+ith(i)+
      " argument, but got a contract " + argSpec);
 
     var s = _.size(_.keys(argSpec));
     if (s !== 1)
-      throw new c.privates.ContractLibraryError(who, false, "expected exactly one key to specify the name of the "+ith(i)+
+      throw new errors.ContractLibraryError(who, false, "expected exactly one key to specify the name of the "+ith(i)+
                                      " arguments, but got " + stringify(s));
 
   });
@@ -265,7 +266,7 @@ exports.fun = fun;
 
 function method(ths /* ... */) {
   if (!u.isContractInstance(ths))
-    throw new c.privates.ContractLibraryError('method', false, "expected a Contract for the `this` argument, by got " + stringify(ths));
+    throw new errors.ContractLibraryError('method', false, "expected a Contract for the `this` argument, by got " + stringify(ths));
   return u.gentleUpdate(funHelper('method', _.toArray(arguments).slice(1)).thisArg(ths),
                       { contractName: 'method' });
 }
