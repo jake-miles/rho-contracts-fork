@@ -8,6 +8,7 @@
 /*jshint eqeqeq:true, bitwise:true, forin:true, immed:true, latedef:true, newcap:true, undef:true, strict:false, node:true, loopfunc:true, latedef:false */
 
 var util = require('util');
+var u = require('./utils');
 var _ = require('underscore');
 var grabStack = require('callsite');
 
@@ -27,65 +28,13 @@ Error.stackTraceLimit = Infinity;
 
 //--
 //
-// Helper Functions
-//
-
-function isMissing(v) {
-  return _.isUndefined(v) || v === null;
-}
-
-function clone(obj) {
-  var other = _.clone(obj);
-  other.__proto__ = obj.__proto__;
-  return other;
-}
-exports.privates.clone = clone;
-
-function gentleUpdate(obj, spec) { // aka, not an imperative update. aka, no bang.
-  var other = clone(obj);
-  _.each(spec, function(v, k) { other[k] = v; });
-  return other;
-}
-exports.privates.gentleUpdate = gentleUpdate;
-
-function ith(i) {
-  i++;
-  switch (i % 10) {
-  case 1: return i+"st";
-  case 2: return i+"nd";
-  case 3: return i+"rd";
-  default: return i+"th";
-  }
-}
-
-function stringify(v) {
-  if (isContractInstance(v)) {
-    return v.toString();
-  } else {
-    return util.inspect(v, false, errorMessageInspectionDepth, false);
-  }
-}
-
-
-function functionName(fn) {
-    var match = fn.toString().match(/function ([^\(]+)/);
-    if (match) {
-        return match[1].trim();
-    } else {
-        return null;
-    }
-};
-exports.privates.functionName = functionName;
-
-//--
-//
 // Stack context items
 //
 
 var stackContextItems = {
   argument: function (arg) {
     return { 'short': (_.isNumber(arg) ? ".arg("+arg+")" : "."+arg),
-             'long': "for the " + (_.isNumber(arg) ? ith(arg) : "`"+arg+"`") + " argument of the call." };
+             'long': "for the " + (_.isNumber(arg) ? u.ith(arg) : "`"+arg+"`") + " argument of the call." };
   },
 
   'this': { 'short': ".this",
@@ -99,7 +48,7 @@ var stackContextItems = {
 
   and: function(i) {
     return { 'short': ".and("+i+")",
-             'long': "for the " + ith(i) + " branch of the `and` contract" };
+             'long': "for the " + u.ith(i) + " branch of the `and` contract" };
   },
 
   or: function(i) {
@@ -108,13 +57,13 @@ var stackContextItems = {
 
   arrayItem: function (i) {
     return { 'short': "["+i+"]",
-             'long': "for the " + ith(i) + " element of the array",
+             'long': "for the " + u.ith(i) + " element of the array",
              i: i };
   },
 
   tupleItem: function (i) {
     return { 'short': "["+i+"]",
-             'long': "for the " + ith(i) + " element of the tuple" };
+             'long': "for the " + u.ith(i) + " element of the tuple" };
   },
 
   hashItem: function (k) {
@@ -137,13 +86,10 @@ exports.privates.stackContextItems = stackContextItems;
 // Error classes
 //
 
-var errorMessageInspectionDepth = 5;
-exports.setErrorMessageInspectionDepth = function(depth) {
-  errorMessageInspectionDepth = depth;
-};
+exports.setErrorMessageInspectionDepth = u.setErrorMessageInspectionDepth;
 
 function cleanStack(stack) {
-  stack = clone(stack);
+  stack = u.clone(stack);
   stack.shift();
   var irrelevantFileNames = [ /\/contract.js$/, /\/contract.impl.js$/, /\/function-contracts.js$/,
                               /rho-contracts.js\/index.js$/, /\/underscore.js$/,
@@ -224,7 +170,7 @@ ContractError.prototype = _.extend(Object.create(Error.prototype), {
     self.context = context || self.context;
     self.expected = expected;
     self.data = data;
-    self.message += "Expected " + expected + ", but got " + stringify(data) + "\n";
+    self.message += "Expected " + expected + ", but got " + u.stringify(data) + "\n";
     return self;
   },
 
@@ -236,7 +182,7 @@ ContractError.prototype = _.extend(Object.create(Error.prototype), {
       if (!self.expected ||                   // if expected() has not already printed the value
           !_.isEmpty(self.context.stack))    // or there is a stack, so expected() has printed only
         //                                       a small piece of the value.
-        self.message += "The full value being checked was:\n" + stringify(self.context.data) + "\n";
+        self.message += "The full value being checked was:\n" + u.stringify(self.context.data) + "\n";
     return self;
   },
 
@@ -254,7 +200,7 @@ ContractError.prototype = _.extend(Object.create(Error.prototype), {
         // Invariant: the immediate context is always a stackContextItems.arrayItem,
         // which always hash a `i` field
 
-        self.message += "for the " + ith(immediateContext.i) + " extra argument of the call.\n";
+        self.message += "for the " + u.ith(immediateContext.i) + " extra argument of the call.\n";
         stack = stack.slice(0, -2);
 
       } else if (immediateContext['long']) {
@@ -301,7 +247,7 @@ exports.ContractLibraryError = ContractLibraryError;
 //
 
 function checkWContext(contract, data, context) {
-  if (contract.isOptional && isMissing(data)) {
+  if (contract.isOptional && u.isMissing(data)) {
     // ok
   } else {
     if (!contract.firstChecker(data)) {
@@ -320,7 +266,7 @@ function checkWContext(contract, data, context) {
 }
 
 function wrapWContext(contract, data, context) {
-  if (contract.isOptional && isMissing(data)) {
+  if (contract.isOptional && u.isMissing(data)) {
     return data;
   } else {
     return contract.wrapper(data, function (nextContract, nextV, nextContext) {
@@ -378,7 +324,7 @@ function Contract(name, // name: the name of the contract as it should appear in
 exports.privates.Contract = Contract;
 
 Contract.prototype = {
-  signal: "M`okY\\xtXVmQzw5dfjjhkDM|Z9@hGy",
+  signal: u.contractSignal,
   theDoc: [],
   category: false,
   needsWrapping: false,
@@ -415,37 +361,23 @@ Contract.prototype = {
   rename: function (name) {
     var self = this;
     if (collectingBuiltInContractNames && !_.contains(builtInContractNames, name)) builtInContractNames.push(name);
-    return gentleUpdate(this, { contractName: name, toString: function(){return "c."+name;} });
+    return u.gentleUpdate(this, { contractName: name, toString: function(){return "c."+name;} });
   },
 
   optional: function () {
     var self = this;
     var oldToString = self.toString;
-    return gentleUpdate(this, { isOptional: true,
+    return u.gentleUpdate(this, { isOptional: true,
                                 toString: function () { var self = this; return 'c.optional(' + oldToString.call(self) + ')'; }
                               });
   },
 
   doc: function (/*...*/) {
     var self = this;
-    return gentleUpdate(this, { theDoc: _.toArray(arguments), category: currentCategory }); }
+    return u.gentleUpdate(this, { theDoc: _.toArray(arguments), category: currentCategory }); }
 };
 
 exports.Contract = Contract;
-
-function isContractInstance(v) {
-
-  // Instead of doing `v instanceof Contract`, a value is considered a
-  // contract iff `v.signal === Contract.prototype.signal`, where
-  // `signal` is a short constant random string. The signal check is
-  // slightly more reliable. With the `instanceof` check, a situation
-  // where two different versions of the contract library are
-  // installed make the check fail, which result in throughly puzzling
-  // contract errors.
-
- return v && v.signal === Contract.prototype.signal;
-}
-exports.privates.isContractInstance = isContractInstance;
 
 //--
 //
@@ -453,7 +385,7 @@ exports.privates.isContractInstance = isContractInstance;
 //
 
 function _toContract (v, upgradeObjects) {
-  if (isContractInstance(v)) {
+  if (u.isContractInstance(v)) {
     return v;
   }
   else if (_.isArray(v)) {
@@ -470,7 +402,7 @@ function _toContract (v, upgradeObjects) {
                   _.partial(
                     _toContract, _, true)));
   }
-  else throw new ContractLibraryError('toContract', false, "Cannot promote " + stringify(v) + " to a contract");
+  else throw new ContractLibraryError('toContract', false, "Cannot promote " + u.stringify(v) + " to a contract");
 
 }
 
@@ -550,7 +482,7 @@ var anyFunction = pred(_.isFunction).rename('fun(...)');
 exports.anyFunction = anyFunction;
 
 var isA = function(parent) {
-  var name = functionName(parent) || '...';
+  var name = u.functionName(parent) || '...';
   return pred(function (v) { return v instanceof parent; }).rename('isA(' + name + ')');
 };
 exports.isA = isA;
@@ -559,7 +491,7 @@ var error = isA(Error).rename('error');
 exports.error = error;
 
 var contract = pred(function (v) {
-  return isContractInstance(v) || _.isArray(v) || !_.isObject(v);
+  return u.isContractInstance(v) || _.isArray(v) || !_.isObject(v);
 }).rename('contract');
 exports.contract = contract;
 
@@ -738,7 +670,7 @@ function tuple(/* ... */) {
   self.strict = function () {
     var self = this;
     var oldNestedChecker = self.nestedChecker;
-    var result = gentleUpdate(self, {
+    var result = u.gentleUpdate(self, {
       nestedChecker: function (data, next, context) {
         var self = this;
         if (_.size(data) !== _.size(self.contracts)) {
@@ -765,7 +697,7 @@ function hash(valueContract) {
   var self = new Contract('hash');
   self.valueContract = valueContract;
   self.firstChecker = function (v) {
-    return _.isObject(v) && !isContractInstance(v);
+    return _.isObject(v) && !u.isContractInstance(v);
   };
   self.nestedChecker = function (data, next, context) {
     var self = this;
@@ -775,7 +707,7 @@ function hash(valueContract) {
   };
   self.wrapper = function (data, next, context) {
     var self = this;
-    var result = clone(data);
+    var result = u.clone(data);
     _.each(result, function (v, k) {
       result[k] = next(self.valueContract, v, stackContextItems.hashItem(k));
     });
@@ -797,19 +729,19 @@ function object(/*opt*/ fieldContracts) {
     var self = this;
 
     _(self.fieldContracts).each(function (contract, field) {
-      if (!contract.isOptional && isMissing(data[field])) {
-        context.fail(new ContractError(context, "Field `" + field + "` required, got " + stringify(data)).fullContractAndValue());
+      if (!contract.isOptional && u.isMissing(data[field])) {
+        context.fail(new ContractError(context, "Field `" + field + "` required, got " + u.stringify(data)).fullContractAndValue());
       }
-      if (!isMissing(data[field])) next(contract, data[field], stackContextItems.objectField(field));
+      if (!u.isMissing(data[field])) next(contract, data[field], stackContextItems.objectField(field));
     });
   };
   self.wrapper = function (data, next) {
     var self = this;
-    var result = clone(data);
+    var result = u.clone(data);
 
     _(self.fieldContracts).each(function (contract, field) {
       if (contract.needsWrapping) {
-        result[field] = next(gentleUpdate(contract, { thingName: field }),
+        result[field] = next(u.gentleUpdate(contract, { thingName: field }),
                              data[field],
                              stackContextItems.objectField(field));
       }
@@ -821,13 +753,13 @@ function object(/*opt*/ fieldContracts) {
   self.extend = function (newFields) {
     var self = this;
     var oldToString = self.toString;
-    return gentleUpdate(self, { fieldContracts: gentleUpdate(self.fieldContracts, newFields) }); // TODO: toString when being renamed
+    return u.gentleUpdate(self, { fieldContracts: u.gentleUpdate(self.fieldContracts, newFields) }); // TODO: toString when being renamed
   };
 
   self.strict = function () {
     var self = this;
     var oldNestedChecker = self.nestedChecker;
-    var result = gentleUpdate(self, {
+    var result = u.gentleUpdate(self, {
       nestedChecker: function (data, next, context) {
         var self = this;
         var extra = _.difference(_.keys(data), _.keys(self.fieldContracts));
@@ -837,7 +769,7 @@ function object(/*opt*/ fieldContracts) {
           context.fail(new ContractError
                        (context,
                         "Found the extra field" + (_.size(extra) === 1 ? " " : "s ") + extraStr + " in " +
-                        stringify(data) + "\n")
+                        u.stringify(data) + "\n")
                        .fullContractAndValue());
         }
         return oldNestedChecker.call(self, data, next, context);
@@ -945,7 +877,7 @@ exports.documentType = documentType;
 function publish(moduleName, self, contracts, /*opt*/ additionalExports) {
   moduleName = ensureDocumentationTable(moduleName);
 
-  var result = (additionalExports ? clone(additionalExports) : {});
+  var result = (additionalExports ? u.clone(additionalExports) : {});
   _.each(contracts, function (c, n) {
     if (!_.has(self, n))
       throw new ContractLibraryError('publish', false, n + " is missing in the implementation");

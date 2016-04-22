@@ -9,6 +9,7 @@
 
 var util = require('util');
 var _ = require('underscore');
+var u = require('./utils');
 var c = require('./contract.impl');
 
 function checkOptionalArgumentFormals(who, argumentContracts) {
@@ -61,12 +62,12 @@ function fnHelper(who, argumentContracts) {
     var self = this;
 
     if (!context.thingName) {
-      context.thingName = c.privates.functionName(fn);
+      context.thingName = u.functionName(fn);
     }
 
     var r = function (/* ... */) {
-      var contextHere = c.privates.clone(context);
-      contextHere.stack = c.privates.clone(context.stack);
+      var contextHere = u.clone(context);
+      contextHere.stack = u.clone(context.stack);
       contextHere.thingName = self.thingName || contextHere.thingName;
       var reverseBlame = function(r) { if (r) contextHere.blameMe = !contextHere.blameMe; };
 
@@ -105,19 +106,19 @@ function fnHelper(who, argumentContracts) {
   };
   self.extraArgs = function(contract) {
     contract = contract || c.any;
-    var self = this; return c.privates.gentleUpdate(self, { extraArgumentContract: contract });
+    var self = this; return u.gentleUpdate(self, { extraArgumentContract: contract });
   };
   self.needsWrapping = true;
-  self.thisArg = function (contract) { var self = this; return c.privates.gentleUpdate(self, { thisContract: contract }); };
+  self.thisArg = function (contract) { var self = this; return u.gentleUpdate(self, { thisContract: contract }); };
   self.ths = self.thisArg; // for backward compatibility
-  self.returns = function (contract) { var self = this; return c.privates.gentleUpdate(self, { resultContract: contract }); };
+  self.returns = function (contract) { var self = this; return u.gentleUpdate(self, { resultContract: contract }); };
 
   self.constructs = function (prototypeFields) {
     var self = this;
 
     var oldWrapper = self.wrapper;
 
-    return c.privates.gentleUpdate(self, {
+    return u.gentleUpdate(self, {
 
       nestedChecker: function (v) {
         var self = this;
@@ -139,11 +140,11 @@ function fnHelper(who, argumentContracts) {
         // In order to do, we disable the `resultContract` since the normal wrapped
         // does not check results according to constructor-invocation semantics.
         // The actual result check is done below.
-        var wrappedFnWithoutResultCheck = oldWrapper.call(c.privates.gentleUpdate(self, { resultContract: c.any }), fn, next, context);
+        var wrappedFnWithoutResultCheck = oldWrapper.call(u.gentleUpdate(self, { resultContract: c.any }), fn, next, context);
 
         var WrappedConstructor = function (/* ... */) {
-          var contextHere = c.privates.clone(context);
-          contextHere.stack = c.privates.clone(context.stack);
+          var contextHere = u.clone(context);
+          contextHere.stack = u.clone(context.stack);
           contextHere.thingName = self.thingName || contextHere.thingName;
 
           var receivedResult = wrappedFnWithoutResultCheck.apply(this, arguments);
@@ -179,7 +180,7 @@ function fnHelper(who, argumentContracts) {
           if (contract.thisContract === c.any) {
             // Functions with no specified `thisContract` are assumed to be methods
             // and given a `thisContract`
-            contract = c.privates.gentleUpdate(contract, { thisContract: newThisContract });
+            contract = u.gentleUpdate(contract, { thisContract: newThisContract });
           }
           WrappedConstructor.prototype[k] = c.privates.checkWrapWContext(contract, WrappedConstructor.prototype[k], freshContext);
         });
@@ -217,7 +218,7 @@ function funHelper(who, argumentContracts) {
      "expected an object with exactly one field to specify the name of the " +ith(i)+
      " argument, but got " + stringify(argSpec));
 
-    if (c.privates.isContractInstance(argSpec))
+    if (u.isContractInstance(argSpec))
       throw new c.privates.ContractLibraryError
     (who, false,
      "expected a one-field object specifying the name and the contract of the "+ith(i)+
@@ -233,7 +234,7 @@ function funHelper(who, argumentContracts) {
     var name = _.keys(singleton)[0];
     var contract = c.privates._autoToContract(singleton[name]);
 
-    return c.privates.gentleUpdate(contract, { thingName: name });
+    return u.gentleUpdate(contract, { thingName: name });
   });
 
   var toString = function () {
@@ -251,7 +252,7 @@ function funHelper(who, argumentContracts) {
       " -> " + self.resultContract + ")";
   };
 
-  return c.privates.gentleUpdate(fnHelper('fun', contracts), { contractName: 'fun',
+  return u.gentleUpdate(fnHelper('fun', contracts), { contractName: 'fun',
                                                     toString: toString
                                                   });
 
@@ -263,9 +264,9 @@ function fun(/*...*/) {
 exports.fun = fun;
 
 function method(ths /* ... */) {
-  if (!c.privates.isContractInstance(ths))
-    throw new c.privates.ContractLibraryError('method', false, "expected a c.privates.Contract for the `this` argument, by got " + stringify(ths));
-  return c.privates.gentleUpdate(funHelper('method', _.toArray(arguments).slice(1)).thisArg(ths),
+  if (!u.isContractInstance(ths))
+    throw new c.privates.ContractLibraryError('method', false, "expected a Contract for the `this` argument, by got " + stringify(ths));
+  return u.gentleUpdate(funHelper('method', _.toArray(arguments).slice(1)).thisArg(ths),
                       { contractName: 'method' });
 }
 exports.method = method;
