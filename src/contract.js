@@ -417,5 +417,6 @@ module.exports = c.publish(thisModuleName, c, contracts,
                              tupleContractObject: tupleContractObject,
                              objectContractObject: objectContractObject,
                              Contract: c.Contract,
-                             ContractError: c.ContractError
+                             ContractError: c.ContractError,
+                             callback : c.callback
                            });
