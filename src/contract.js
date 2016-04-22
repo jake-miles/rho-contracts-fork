@@ -142,6 +142,14 @@ var contextContract = c.object({ thingName: c.string,
                                  contract: c.contract
                                });
 
+var oneKeyHash = c.fun({ valueContract: c.contract })
+    .wrap(function (valueContract) {
+      return c.and(
+        c.hash(valueContract),
+        c.pred(function (hash) { return _(hash).keys().length === 1; })
+      ).rename('a hash containing exactly one key, with a value satisfying ' + valueContract.toString());
+    });
+
 var contracts = {
   check: c.fun({contract: c.contract}, {data: c.any}, { name: c.optional(c.string) })
     .doc("Verifies that `data` satisfies `contract`, if it doesn't, throws a `ContractError`,",
@@ -326,6 +334,31 @@ var contracts = {
          "",
          "See also: `fn, `fun`, `returns`, `extraArgs`"),
 
+  callback: c.fun().extraArgs([oneKeyHash(c.contract)]).returns(functionContract)
+    .doc("Creates a contract for a Node-style callback. The returned contract",
+         "accepts functions whose first argument is `c.any`, and the other",
+         "arguments are specified the same way as `c.fun`.",
+         "",
+         "In the Node-style callback convension, any non-null non-undefined",
+         "value for the first argument indicates an error. When an error is",
+         "indicated, the other arguments must not be present, else a contract",
+         "is raise.",
+         "",
+         "As a special case, invoking a callback with no arguments indicates",
+         "",
+         "wrapped function will receive one argument set to `undefined`.",
+         "",
+         "Calling `withError` on the returned contract changes the type of",
+         "the expected error from `c.any` to the contract specified.",
+         "",
+         "Invoking a Node-style callback with both an error and success",
+         "values will raise a `ContractError`.",
+         "",
+         "Finally, the `callback` function itself has a method",
+         "`withDefaultError` which returns a new `callback` function. Using",
+         "this newly created callback function will create contracts whose",
+         "default error contract is the one given to `withDefaultError`."),
+
   /*
   ContractError: c.fun({ context: contextContract }, { message: c.string })
     .returns(c.object({ name: c.string,
@@ -418,6 +451,11 @@ module.exports = c.publish(thisModuleName, c, contracts,
                              tupleContractObject: tupleContractObject,
                              objectContractObject: objectContractObject,
                              Contract: c.Contract,
-                             ContractError: errors.ContractError,
-                             callback : c.callback
+                             ContractError: errors.ContractError
                            });
+
+module.exports.callback.withDefaultError =
+  c.fun({ defaultErrorContract: c.contract })
+  .wrap(function (defaultErrorContract) {
+    return c._makeCallback(defaultErrorContract);
+  });
