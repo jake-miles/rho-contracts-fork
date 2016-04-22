@@ -9,6 +9,7 @@
 
 var _ = require('underscore');
 var c = require('./contract.impl');
+var errors = require('./errors');
 
 _.extend(c, require('./function-contracts.js'));
 
@@ -417,6 +418,6 @@ module.exports = c.publish(thisModuleName, c, contracts,
                              tupleContractObject: tupleContractObject,
                              objectContractObject: objectContractObject,
                              Contract: c.Contract,
-                             ContractError: c.ContractError,
+                             ContractError: errors.ContractError,
                              callback : c.callback
                            });
