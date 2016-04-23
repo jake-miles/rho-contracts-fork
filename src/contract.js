@@ -351,9 +351,11 @@ var contracts = {
          "the expected error from `c.any` to the contract specified.",
          "",
          "Finally, the `callback` function itself has a method",
-         "`withDefaultError` which returns a new `callback` function. Using",
-         "this newly created callback function will create contracts whose",
-         "default error contract is the one given to `withDefaultError`."),
+         "`withDefaultError` which returns a new function which behaves exactly",
+         "the same as the original `c.callback` function, except for a",
+         "default contract for the \"error\" argument. If many callbacks accept only `Error`",
+         "it may be easier to set `withDefaultError(c.error)` once rather",
+         "than invoking `withError(c.error)` on each contract individually."),
 
   /*
   ContractError: c.fun({ context: contextContract }, { message: c.string })
