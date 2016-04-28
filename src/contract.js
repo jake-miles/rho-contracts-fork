@@ -142,14 +142,6 @@ var contextContract = c.object({ thingName: c.string,
                                  contract: c.contract
                                });
 
-var oneKeyHash = c.fun({ valueContract: c.contract })
-    .wrap(function (valueContract) {
-      return c.and(
-        c.hash(valueContract),
-        c.pred(function (hash) { return _(hash).keys().length === 1; })
-      ).rename('a hash containing exactly one key, with a value satisfying ' + valueContract.toString());
-    });
-
 var contracts = {
   check: c.fun({contract: c.contract}, {data: c.any}, { name: c.optional(c.string) })
     .doc("Verifies that `data` satisfies `contract`, if it doesn't, throws a `ContractError`,",

@@ -945,8 +945,6 @@ The `constructs` method shown above avoids both these problems.
 
 Read about these functions in [`contract.js`](https://github.com/sefaira/rho-contracts.js/blob/master/src/contract.js) directly.
 
-- `c.callback`: contracts for Node-style callback which take an error
-  as the first argument.
 - `c.pred`: construct custom contracts from predicates.
 - `c.forwardRef` and `c.setRef`: the sibblings of `c.cylic`.
 - `publish()`: contracts on whole modules which seals private methods
