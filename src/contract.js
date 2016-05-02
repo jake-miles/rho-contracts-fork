@@ -378,15 +378,15 @@ var contracts = {
          "for `contract.contractName` in `moduleName`. The given contract should have a been given",
          "a unique name, otherwise `documentType` throws an exception."),
 
-  wrapAll: c.fun({ self: c.object() }, { contracts: c.hash(c.contract) })
-    .doc("Returns an object like `self` where each element is wrapped using the",
+  wrapAll: c.fun({ implementation: c.object() }, { contracts: c.hash(c.contract) })
+    .doc("Returns an object like `implementation` where each element is wrapped using the",
          "correspoding contract in `contracts`. Notably, `wrapAll` hides the elements",
-         "that are not mentionned in the contract, effectively making them private.",
+         "that are not mentioned in the contract, effectively making them private.",
          "",
          "`wrapAll` records the names of the items being wrapped in the wrapper. The names",
          "are then used to produce better error messages when the contracts fail."),
 
-  publish: c.fun({ moduleName: c.string }, { self: c.object() }, { contracts: c.hash(c.contract) },
+  publish: c.fun({ moduleName: c.string }, { implementation: c.object() }, { contracts: c.hash(c.contract) },
                  { additionalExports: c.optional(c.object()) })
     .doc("`publish` does the same wrapping as `wrapAll`, then records any documentation",
          "placed on the contract into the global `documentationTable` where a documentation",
