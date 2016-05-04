@@ -124,7 +124,13 @@ function fnHelper(who, argumentContracts) {
       nestedChecker: function (v) {
         var self = this;
 
-        var missing = _.difference(_.keys(prototypeFields), Object.getOwnPropertyNames(v.prototype));
+        var missing = [];
+        for(var k in prototypeFields) {
+            if (v.prototype[k] === undefined) {
+                missing.push(k);
+            }
+        }
+
         if (missing.length) {
           throw new errors.ContractLibraryError
           ('constructs', false,
