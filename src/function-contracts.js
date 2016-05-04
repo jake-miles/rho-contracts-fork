@@ -121,22 +121,23 @@ function fnHelper(who, argumentContracts) {
 
     return u.gentleUpdate(self, {
 
-      nestedChecker: function (v) {
+      nestedChecker: function (data, next, context) {
         var self = this;
 
         var missing = [];
         for(var k in prototypeFields) {
-            if (v.prototype[k] === undefined) {
+            if (data.prototype[k] === undefined) {
                 missing.push(k);
             }
         }
 
         if (missing.length) {
-          throw new errors.ContractLibraryError
-          ('constructs', false,
-           util.format("Some fields present in %s prototype contract are missing on the prototype: %s",
-                       self.thingName ? util.format("%s's", self.thingName) : "the",
-                       missing.join(', ')));
+          var msg =
+              util.format("constructs: some fields present in %s prototype contract are missing on the prototype: %s",
+                          self.thingName ? util.format("%s's", self.thingName) : "the",
+                          missing.join(', '));
+
+          context.fail(new errors.ContractError(context, msg).fullContract());
         }
       },
 
