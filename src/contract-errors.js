@@ -1,8 +1,6 @@
 var _ = require('underscore');
 var u = require('./utils');
-var grabStack = require('callsite');
-
-//--
+var Stacktrace = require('stacktrace-js');
 //
 // Stack context items
 //
@@ -81,7 +79,14 @@ function cleanStack(stack) {
 }
 
 function captureCleanStack() {
-  return cleanStack(grabStack() || []);
+  var error = new Error();
+  Stacktrace.fromError(error)
+    .then(function(stack){
+      return cleanStack(stack);
+    })
+    .catch(function(err){
+      return err;
+    });
 }
 exports.captureCleanStack = captureCleanStack;
 
