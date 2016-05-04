@@ -1,5 +1,7 @@
 var _ = require('underscore');
 var u = require('./utils');
+
+//--
 //
 // Stack context items
 //
@@ -78,14 +80,22 @@ function cleanStack(stack) {
 }
 
 function captureCleanStack() {
-  var err, stack;
-  try {
-    err = new Error();
-   // Code throwing an exception
-  } catch(e) {
-    stack = e.stack;
+  var stack;
+
+  // TODO: Create a better fallback implementation
+  // callsite depends on v8 engine, not available in all browsers
+  if(!!Error.captureStackTrace){
+    stack = require('callsite')();
   }
-  return stack || [];
+  else{
+    try {
+      new Error();
+    }
+    catch(e){
+      stack = e.stack;
+    }
+  }
+  return cleanStack(stack || []);
 }
 exports.captureCleanStack = captureCleanStack;
 
