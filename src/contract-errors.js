@@ -1,6 +1,5 @@
 var _ = require('underscore');
 var u = require('./utils');
-var Stacktrace = require('stacktrace-js');
 //
 // Stack context items
 //
@@ -79,14 +78,14 @@ function cleanStack(stack) {
 }
 
 function captureCleanStack() {
-  var error = new Error();
-  Stacktrace.fromError(error)
-    .then(function(stack){
-      return cleanStack(stack);
-    })
-    .catch(function(err){
-      return err;
-    });
+  var err, stack;
+  try {
+    err = new Error();
+   // Code throwing an exception
+  } catch(e) {
+    stack = e.stack;
+  }
+  return stack || [];
 }
 exports.captureCleanStack = captureCleanStack;
 
