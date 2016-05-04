@@ -12,7 +12,7 @@ var should = require('should');
 var __ = require('underscore');
 var c = require('./contract');
 var fs = require('fs');
-var errors = require('./errors');
+var errors = require('./contract-errors');
 
 Array.prototype.toString = function () {
   return "[" + this.join(", ") + "]";

@@ -11,7 +11,7 @@ var util = require('util');
 var _ = require('underscore');
 var u = require('./utils');
 var c = require('./contract.impl');
-var errors = require('./errors');
+var errors = require('./contract-errors');
 
 function checkOptionalArgumentFormals(who, argumentContracts) {
   var optionsOnly = false;
