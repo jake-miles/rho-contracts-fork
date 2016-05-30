@@ -4,10 +4,17 @@
 
 
 
-rho-contracts.js
-===============
+rho-contracts-fork
+==================
 
 Racket-style Higher-Order Contracts in Plain JavaScript
+
+This is a fork of [sefaira/rho-contracts.js][], maintained by the original
+author. The maintainer of tiny-lr is on hiatus, and this fork takes care of
+lingering issues until the maintainer (hopefully) returns.
+
+[sefaira/rho-contracts.js]: https://github.com/sefaira/rho-contracts.js
+
 
 ## Table of Content
 [Installation](#installation)  
@@ -35,7 +42,7 @@ Racket-style Higher-Order Contracts in Plain JavaScript
 <a name="installation"/>
 ## Installation
 
-`npm install rho-contracts`
+`npm install rho-contracts-fork`
 
 <a name="introduction"/>
 ## Introduction
@@ -87,7 +94,7 @@ possible to place the specification next to the definition of `derive`, where it
 belongs, like this:
 
 ```javascript
-var c = require('rho-contracts')
+var c = require('rho-contracts-fork')
 
 // derive: returns a function that is the numerically-computed derivative
 //         of the given function.
@@ -255,7 +262,7 @@ for the `dx` argument of the call.
 The contract library is typically `require`'d and bound to a variable called `c`:
 
 ```javascript
-c = require('rho-contracts')
+c = require('rho-contracts-fork')
 ```
 
 <a name="basic-value"/>
@@ -360,7 +367,7 @@ your node module and keep the contracts created and used in that module in the c
 
 ```javascript
 > var _ = require('underscore')
-> var c = _.clone(require('rho-contracts'));
+> var c = _.clone(require('rho-contracts-fork'));
 > c.numberAsString = c.matches(/^[0-9]+(\.[0-9]+)?$/)
 > c.or(c.falsy, c.numberAsString).check(null)     // ok, null is falsy
 null
@@ -565,7 +572,7 @@ argument, a contract that has been marked optional makes that argument optional
 argument must be optional as well.
 
 ```javascript
-> var c = require('rho-contracts')
+> var c = require('rho-contracts-fork')
 > var util = require('util')
 
 > var x = 0
