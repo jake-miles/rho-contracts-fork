@@ -312,18 +312,6 @@ describe ("constructs", function () {
     instance.constructor.should.eql(ExampleImpl);
   });
 
-  it('allows `instanceof` and `isA` checks on the wrapped constructor', function () {
-    var instance = new Example(5);
-    instance.should.be['instanceof'](Example);
-    c.isA(Example).check(instance).should.be.ok;
-  });
-
-  it('allows `instanceof` and `isA` checks on the implementation', function () {
-    var instance = new Example(5);
-    instance.should.be['instanceof'](ExampleImpl);
-    c.isA(ExampleImpl).check(instance).should.be.ok;
-  });
-
   it ("refuses wrong constructor arguments", function () {
     (function () { new Example("boom"); }).should.throwContract(/ExampleImpl[\s\S]+argument/);
   });
@@ -363,6 +351,18 @@ describe ("constructs", function () {
         _dec: c.fun({i: c.number})
     }).wrap(ChildExampleImpl).should.be.ok;
 
+  });
+
+  it('allows `instanceof` and `isA` checks on the wrapped constructor', function () {
+    var instance = new Example(5);
+    instance.should.be['instanceof'](Example);
+    c.isA(Example).check(instance).should.be.ok;
+  });
+
+  it('allows `instanceof` and `isA` checks on the implementation', function () {
+    var instance = new Example(5);
+    instance.should.be['instanceof'](ExampleImpl);
+    c.isA(ExampleImpl).check(instance).should.be.ok;
   });
 
   it ("supports returning explicitly", function () {
