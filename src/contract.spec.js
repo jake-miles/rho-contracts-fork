@@ -312,11 +312,15 @@ describe ("constructs", function () {
     instance.constructor.should.eql(ExampleImpl);
   });
 
-  it ('allows `instanceof` and `isA` checks', function () {
+  it('allows `instanceof` and `isA` checks on the wrapped constructor', function () {
     var instance = new Example(5);
     instance.should.be['instanceof'](Example);
-    instance.should.be['instanceof'](ExampleImpl);
     c.isA(Example).check(instance).should.be.ok;
+  });
+
+  it('allows `instanceof` and `isA` checks on the implementation', function () {
+    var instance = new Example(5);
+    instance.should.be['instanceof'](ExampleImpl);
     c.isA(ExampleImpl).check(instance).should.be.ok;
   });
 

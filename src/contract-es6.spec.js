@@ -18,7 +18,7 @@ describe('c.constructs', function () {
 
   describe('with a class', function () {
 
-    class Foo {
+    class ExampleImpl {
       constructor (initialValue) {
         this.value = initialValue;
       }
@@ -33,12 +33,24 @@ describe('c.constructs', function () {
         inc: c.fun().returns(c.number),
       });
 
-    var Wrapped = theContract.wrap(Foo);
+    var Example = theContract.wrap(ExampleImpl);
 
     it('can construct', function () {
-      var wrapped = new Wrapped(10);
+      var instance = new Example(10);
 
-      wrapped.value.should.be.eql(10);
+      instance.value.should.be.eql(10);
+    });
+
+    it('allows `instanceof` and `isA` checks on the wrapped constructor', function () {
+      var instance = new Example(5);
+      instance.should.be['instanceof'](Example);
+      c.isA(Example).check(instance).should.be.ok;
+    });
+
+    it('allows `instanceof` and `isA` checks on the implementation', function () {
+      var instance = new Example(5);
+      instance.should.be['instanceof'](ExampleImpl);
+      c.isA(ExampleImpl).check(instance).should.be.ok;
     });
 
   });
