@@ -46,7 +46,7 @@ var errorMessageInspectionDepth = 5;
 
 function setErrorMessageInspectionDepth(depth) {
   errorMessageInspectionDepth = depth;
-};
+}
 
 function stringify(v) {
   if (isContractInstance(v)) {
@@ -64,7 +64,7 @@ function functionName(fn) {
     } else {
         return null;
     }
-};
+}
 
 module.exports = {
     contractSignal: contractSignal,

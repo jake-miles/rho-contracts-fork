@@ -250,8 +250,8 @@ describe ("object", function () {
 
   it ("wrap maintains prototypes", function () {
     var x = {thk:function(){}};
-    x.__proto__.x = 5;
-    c.object({thk:c.fn()}).wrap(x).__proto__.should.eql({x:5});
+    Object.getPrototypeOf(x).x = 5;
+    Object.getPrototypeOf(c.object({thk:c.fn()}).wrap(x)).should.eql({x:5});
   });
 
   it ("extends passes", function () {
