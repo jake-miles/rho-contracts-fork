@@ -180,8 +180,8 @@ function fnHelper(who, argumentContracts) {
         //
         //
         // Finally, we ensure that `instanceof` checks works when invoked
-        // with both the original `Contructor` and with the new
-        // `WrappedConstructorNoResultCheck`.  This can be acheived by placing both
+        // with both the original contructor and with the new
+        // wrapped constructor, which can be acheived by placing both
         // constructors into prototype chain where the `instanceof`
         // looks for them. `a instanceof Foo` is defined as
         //
