@@ -144,32 +144,8 @@ function fnHelper(who, argumentContracts) {
       wrapper: function (Constructor, next, context) {
         var self = this;
 
-        //
-        // ES6 requires `new` when invoking constructors, but there is no direct way to
-        // splat an argument array when invoking with `new`. This is a workaround.
-        // cf. http://stackoverflow.com/a/8843181/35902
-        //
-        // `forceNewInvoke` returns a function which, when invoked as `result(1, 2, 3)`
-        // forwards its arguments to `fn` with `new`, aka `new fn(1, 2, 3)`
-        //
-        // This restriction will introduce an additional
-        // complication. ES6 forces the prototype chain of the created
-        // object to that of the _unwrapped_ function, whereas we need
-        // it to be set to the prototype of the _wrapped_ function.
-        //
-        // This is addressed with `setPrototypeOf` below. A solution
-        // without `setPrototypeOf` is possible using ES6's `class`
-        // and `super` keywords.
-        //
-        var forceNewInvoke = function (fn) {
-          return function (/* ... */) {
-            var ReadyToNew = Function.prototype.bind.apply(fn, [null].concat(_.toArray(arguments)));
-            return new ReadyToNew();
-          }
-        };
-
         // Checking the input-output behavior of the
-        // `WrappedConstructorNoResultCheck` takes three steps.
+        // `WrappedConstructor` takes two steps.
         //
         // First we reuse the normal function contract's mechanics to
         // check the inputs.
@@ -205,40 +181,39 @@ function fnHelper(who, argumentContracts) {
         //                                                constructed object
         var constructorName = u.functionName(Constructor);
 
-        // Wrap the constructor to check the inputs (with result check disabled)
-        var WrappedConstructorNoResultCheck = oldWrapper.call(u.gentleUpdate(self, { resultContract: c.any }),
-                                                              forceNewInvoke(Constructor),
-                                                              next, u.gentleUpdate(context, { thingName: constructorName }));
+        class WrappedConstructor extends Constructor {
+          constructor() {
+            var contextHere = u.clone(context);
+            contextHere.stack = u.clone(context.stack);
+            contextHere.thingName = self.thingName || contextHere.thingName || constructorName;
 
+            // Wrap the constructor to check the inputs (with result check disabled)
+            var wrappedArguments;
+            var checkArguments = oldWrapper.call(u.gentleUpdate(self, { resultContract: c.any }),
+                                                 function () { wrappedArguments = arguments; },
+                                                 next, u.gentleUpdate(context, { thingName: constructorName }));
 
-        var WrappedConstructorWithResultCheck = function (/* ... */) {
-          var contextHere = u.clone(context);
-          contextHere.stack = u.clone(context.stack);
-          contextHere.thingName = self.thingName || contextHere.thingName || constructorName;
+            // Then we check the result. If the constructors returns a non-object,
+            // that value is ignored and replaced with `this`
+            function checkResult(receivedResult, replacement) {
+              contextHere.stack.push(errors.stackContextItems.result);
 
-          // Then check the result. If the constructors returns a non-object,
-          // that value is ignored and replaced with `this`
-          function checkResult(receivedResult, replacement) {
-            contextHere.stack.push(errors.stackContextItems.result);
-
-            var resultToCheck;
-            if (_.isObject(receivedResult)) {
-              resultToCheck = receivedResult;
-            } else {
-              resultToCheck = replacement;
+              var resultToCheck;
+              if (_.isObject(receivedResult)) {
+                resultToCheck = receivedResult;
+              } else {
+                resultToCheck = replacement;
+              }
+              var result = c.privates.checkWrapWContext(self.resultContract, resultToCheck, contextHere);
+              contextHere.stack.pop();
+              return result;
             }
-            var result = c.privates.checkWrapWContext(self.resultContract, resultToCheck, contextHere);
-            contextHere.stack.pop();
-            return result;
+
+            checkArguments(...arguments);
+            var receivedResult = super(...wrappedArguments);
+            return checkResult(receivedResult, this);
           }
-
-          var receivedResult = WrappedConstructorNoResultCheck.apply(this, arguments);
-          var result = checkResult(receivedResult, this);
-
-          Object.setPrototypeOf(result, Object.getPrototypeOf(this));
-          return result;
-        };
-
+        }
 
         function wrapMethod(dest, src, name, contract, thisContract) {
           var freshContext = _.clone(context);
@@ -258,20 +233,18 @@ function fnHelper(who, argumentContracts) {
           });
         }
 
-        var wrappedMethods = Object.create(Constructor.prototype)
-        wrapAllMethods(wrappedMethods, Constructor.prototype);
-        WrappedConstructorWithResultCheck.prototype = wrappedMethods;
+        wrapAllMethods(WrappedConstructor.prototype, Constructor.prototype);
 
         // Recreate the constructor field,
         // cf. https://github.com/getify/You-Dont-Know-JS/blob/master/this%20&%20object%20prototypes/ch5.md
-        Object.defineProperty(WrappedConstructorWithResultCheck.prototype, "constructor" , {
+        Object.defineProperty(WrappedConstructor.prototype, "constructor" , {
           enumerable: false,
           writable: true,
           configurable: true,
           value: Constructor
         });
 
-        return WrappedConstructorWithResultCheck;
+        return WrappedConstructor;
       }
     });
 
