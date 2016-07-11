@@ -168,8 +168,8 @@ function fnHelper(who, argumentContracts) {
           }
         };
 
-        // Checking the input-output behavior of the
-        // `WrappedConstructorNoResultCheck` takes three steps.
+        // Checking the input-output behavior of `Constructor` takes
+        // three steps.
         //
         // First we reuse the normal function contract's mechanics to
         // check the inputs.
@@ -197,7 +197,7 @@ function fnHelper(who, argumentContracts) {
         //                                                       |
         //                                                       | [[Prototype]]
         //                                                       |
-        //    WrappedConstructorNoResultCheck     --- .prototype -->  { wrapped methods }
+        //    WrappedConstructor     --- .prototype -->  { wrapped methods }
         //                                                       ^
         //                                                       |
         //                                                       | [[Prototype]]
