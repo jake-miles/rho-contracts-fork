@@ -1,3 +1,5 @@
+-------------------------------------------------------------------------------
+
 <!--- This Source Code Form is subject to the terms of the Mozilla Public
     - License, v. 2.0. If a copy of the MPL was not distributed with this
     - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
@@ -9,9 +11,15 @@ rho-contracts-fork
 
 Racket-style Higher-Order Contracts in Plain JavaScript
 
-This is a fork of [sefaira/rho-contracts.js][], maintained by the original
-author. The maintainer of tiny-lr is on hiatus, and this fork takes care of
-lingering issues until the maintainer (hopefully) returns.
+This is a fork of [sefaira/rho-contracts.js][] which is maintained by the
+original author and the team at Body Labs. The maintainers under the
+`sefaira/` account are on hiatus, so this fork will continue
+rho-contracts' maintenance and development, notably
+
+* Implemented support for ES6 classes
+* Improved stack trace support across more browsers
+
+
 
 [sefaira/rho-contracts.js]: https://github.com/sefaira/rho-contracts.js
 
