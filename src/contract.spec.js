@@ -127,6 +127,12 @@ describe ("value", function () {
   it ("reject different", function () { (function () { c.value(5).check(6); }).should.throwContract(); });
 });
 
+describe ("oneOf", function () {
+  it ("pass match", function () { c.oneOf('a', 'b', 'c').check('b').should.eql('b'); });
+  it ("reject different", function () { (function() { c.oneOf('a', 'b', 'c').check('d'); }).should.throwContract(); });
+  it ("reject null", function () { (function() { c.oneOf('a', 'b', 'c').check(null); }).should.throwContract(); });
+})
+
 describe ("string", function () {
   it ("pass string", function () { c.string.check("asd").should.eql("asd"); });
   it ("reject different", function () { (function () { c.string.check(6); }).should.throwContract(); });
