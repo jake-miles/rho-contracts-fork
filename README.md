@@ -986,6 +986,17 @@ And also
 
 <a name="related"/>
 
+## React Native
+
+When using `rho-contracts` with React Native, the method `Object.setPrototypeOf` may not
+exist at runtime, in which case you can add the polyfill npm module 
+[`setprototypeof`](https://www.npmjs.com/package/setprototypeof) to your app's dependencies,
+and the following line to the start of your app:
+
+```
+Object.setPrototypeOf = require('setprototypeof')
+```
+
 ## Related Work ##
 
 - `rho-contracts.js` is an implementation of the paper [*Contracts for higher-order

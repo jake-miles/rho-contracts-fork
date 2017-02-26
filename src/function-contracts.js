@@ -7,8 +7,8 @@
 
 /*jshint eqeqeq:true, bitwise:true, forin:true, immed:true, latedef:true, newcap:true, undef:true, strict:false, node:true, loopfunc:true, latedef:false */
 
-var util = require('util');
 var _ = require('underscore');
+var format = require('format')
 var u = require('./utils');
 var c = require('./contract.impl');
 var errors = require('./contract-errors');
@@ -133,9 +133,9 @@ function fnHelper(who, argumentContracts) {
 
         if (missing.length) {
           var msg =
-              util.format("constructs: some fields present in %s prototype contract are missing on the prototype: %s",
-                          self.thingName ? util.format("%s's", self.thingName) : "the",
-                          missing.join(', '));
+              format("constructs: some fields present in %s prototype contract are missing on the prototype: %s",
+                     self.thingName ? util.format("%s's", self.thingName) : "the",
+                     missing.join(', '));
 
           context.fail(new errors.ContractError(context, msg).fullContract());
         }

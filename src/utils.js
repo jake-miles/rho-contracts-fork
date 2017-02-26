@@ -1,6 +1,5 @@
 var _ = require('underscore');
-var util = require('util');
-
+var stringifier = require('stringifier')
 var contractSignal = "M`okY\\xtXVmQzw5dfjjhkDM|Z9@hGy";
 
 function isContractInstance(v) {
@@ -52,7 +51,7 @@ function stringify(v) {
   if (isContractInstance(v)) {
     return v.toString();
   } else {
-    return util.inspect(v, false, errorMessageInspectionDepth, false);
+    return stringifier({ maxDepth: errorMessageInspectionDepth })(v)
   }
 }
 

@@ -7,13 +7,11 @@
 
 /*jshint eqeqeq:true, bitwise:true, forin:true, immed:true, latedef:true, newcap:true, undef:true, strict:false, node:true, loopfunc:true, latedef:false */
 
-var util = require('util');
 var u = require('./utils');
 var _ = require('underscore');
 var errors = require('./contract-errors');
 
 exports.privates = {};
-
 
 // Throughout this file, `var self = this` indicates that the function is
 // intended to be called (and thought of) as a method (regardless of whether
