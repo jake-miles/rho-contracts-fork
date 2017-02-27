@@ -68,7 +68,7 @@ function cleanStack(stack) {
   var irrelevantFileNames = [ /\/contract.js$/, /\/contract.impl.js$/, /\/function-contracts.js$/, /\/contract-errors.js$/,
                               /rho-contracts.js\/index.js$/, /\/underscore.js$/,
                               /^native array.js$/, /^module.js$/, /^native messages.js$/, /^undefined$/ ];
-  while(!_.isEmpty(stack)) {
+  while(stack.length > 0) {
     if (_.any(irrelevantFileNames, function (r) {
       return r.test(stack[0].getFileName()); })) {
       stack.shift();

@@ -21,9 +21,7 @@ function isMissing(v) {
 }
 
 function clone(obj) {
-    var other = _.clone(obj)
-    Object.setPrototypeOf(other, Object.getPrototypeOf(obj))
-    return other;
+  return _.create(Object.getPrototypeOf(obj), obj)
 }
 
 function gentleUpdate(obj, spec) { // aka, not an imperative update. aka, no bang.
